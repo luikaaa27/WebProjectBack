@@ -4,19 +4,20 @@ from django.contrib.auth.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(write_only=True)
+    email = serializers.EmailField(required=True)
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'email')
-        write_only_fields = ('username', 'email', 'password',)
+        fields = ('id', 'username', 'password', 'email',)
+        write_only_fields = ('username', 'password', 'email')
         read_only_fields = ('id', )
 
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email']
+            email=validated_data['email'],
+            password=validated_data['password']
         )
-        user.set_password(validated_data['password'])
         user.save()
         return user
 
@@ -40,12 +41,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     recipes = RecipeSerializer(many=True, read_only=True)
-    name = serializers.CharField(write_only=True)
+    name = serializers.CharField()
 
     class Meta:
         model = Categories
         fields = ('id', 'name', 'owner', 'recipes')
-        read_only_fields = ('id', 'recipes')
+       # read_only_fields = ('id', 'recipes')
         # write_only_fields = ('name',)
 
     def to_representation(self, instance):
